@@ -253,6 +253,23 @@ rtp:prepend(lazypath)
 --  To update plugins you can run
 --    :Lazy update
 --
+
+local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
+if not (vim.uv or vim.loop).fs_stat(lazypath) then
+  local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
+  local out = vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
+  if vim.v.shell_error ~= 0 then
+    vim.api.nvim_echo({
+      { 'Failed to clone lazy.nvim:\n', 'ErrorMsg' },
+      { out, 'WarningMsg' },
+      { '\nPress any key to exit...' },
+    }, true, {})
+    vim.fn.getchar()
+    os.exit(1)
+  end
+end
+vim.opt.rtp:prepend(lazypath)
+
 -- NOTE: Here is where you install your plugins.
 require('lazy').setup({
   -- NOTE: Plugins can be added via a link or github org/name. To run setup automatically, use `opts = {}`
@@ -283,6 +300,14 @@ require('lazy').setup({
         topdelete = { text = '‾' },
         changedelete = { text = '~' },
       },
+    },
+  },
+  {
+    'OXY2DEV/markview.nvim',
+    lazy = false, -- must NOT be lazy loaded, as warned in the docs
+    opts = {
+      modes = { 'n', 'i', 'no', 'c' }, -- enable in insert mode too
+      hybrid_modes = { 'i' }, -- render everything except current line in insert
     },
   },
 
